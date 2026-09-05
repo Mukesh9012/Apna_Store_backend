@@ -9,9 +9,17 @@ connectDB();
 
 const app = express();
 
-// Set CORS for frontend URL / allow single-node deploy
+// Set CORS for local development and the deployed frontend.
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3001',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001', process.env.FRONTEND_URL],
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -22,6 +30,10 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {

@@ -1,5 +1,14 @@
 const Product = require('../models/Product');
 const cloudinary = require('../config/cloudinary');
+const fs = require('fs/promises');
+
+const uploadToCloudinary = async (filePath) => {
+  try {
+    return await cloudinary.uploader.upload(filePath);
+  } finally {
+    await fs.unlink(filePath).catch(() => {});
+  }
+};
 
 const getProducts = async (req, res) => {
   try {
@@ -28,7 +37,7 @@ const createProduct = async (req, res) => {
     const { name, description, price, category, stock } = req.body;
     let imageUrl = '';
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
+      const result = await uploadToCloudinary(req.file.path);
       imageUrl = result.secure_url;
     }
     const product = new Product({
@@ -53,7 +62,7 @@ const updateProduct = async (req, res) => {
       product.stock = stock || product.stock;
 
       if (req.file) {
-        const result = await cloudinary.uploader.upload(req.file.path);
+        const result = await uploadToCloudinary(req.file.path);
         product.imageUrl = result.secure_url;
       }
       const updatedProduct = await product.save();
