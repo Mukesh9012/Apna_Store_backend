@@ -4,7 +4,7 @@ const sendEmail = require('../utils/sendEmail');
 const addOrderItems = async (req, res) => {
   try {
     const { items, totalAmount, address, paymentId } = req.body;
-    if (items && items.length === 0) {
+    if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
     } else {
       const order = new Order({
